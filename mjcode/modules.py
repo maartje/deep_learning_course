@@ -116,7 +116,9 @@ class ReLUModule(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    self.x = x
+    relu = np.vectorize(lambda n: max(n, 0.))
+    out = relu(x)
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -139,7 +141,9 @@ class ReLUModule(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    drelu = np.vectorize(lambda n: 1. if n > 0 else 0.)
+    dx = drelu(self.x) * dout
+
     ########################
     # END OF YOUR CODE    #
     #######################    

@@ -51,21 +51,43 @@ class TestLinear(unittest.TestCase):
     self.assertTrue(np.allclose(bx_torch, self.lin_layer.grads['bias']))
     self.assertEqual(
       self.lin_layer.grads['weight'].shape, 
-      self.lin_layer.params['weight'].shape)
+      self.lin_layer.params['weight'].shape
+    )
     self.assertEqual(
       self.lin_layer.grads['bias'].shape, 
-      self.lin_layer.params['bias'].shape)    
+      self.lin_layer.params['bias'].shape
+    )    
 
 class TestRelu(unittest.TestCase):
 
   def setUp(self):
-    self.relu_torch = nn.Relu()
+    self.relu_torch = nn.ReLU()
 
     self.relu = ReLUModule()
 
-    self.x_torch = torch.randn(1,2, requires_grad=True)
+    self.x_torch = torch.randn(5,3, requires_grad=True)
     self.x = self.x_torch.detach().numpy().T
 
+  def test_relu_forward(self):
+    y_torch = self.relu_torch(self.x_torch).detach().numpy().T
+    y = self.relu.forward(self.x)
 
+    self.assertTrue(np.allclose(y_torch, y))
+
+  def test_relu_backward(self):
+    y_torch = self.relu_torch(self.x_torch)
+
+    dout = np.random.rand(3,5)
+    dout_torch = torch.from_numpy(dout.T).to(dtype = torch.float32)
+
+    z = (y_torch*dout_torch).sum()
+    z.backward()
+
+    dx_torch = self.x_torch.grad.numpy().T
+
+    self.relu.forward(self.x)
+    dx = self.relu.backward(dout)
+
+    self.assertTrue(np.allclose(dx_torch, dx))
 
 
