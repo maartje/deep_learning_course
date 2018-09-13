@@ -1,8 +1,9 @@
 import unittest
-from mjcode.modules import LinearModule
+from mjcode.modules import LinearModule, ReLUModule
 import numpy as np
 import torch
 import torch.nn as nn
+
 
 class TestLinear(unittest.TestCase):
 
@@ -13,7 +14,7 @@ class TestLinear(unittest.TestCase):
     self.lin_layer.params['weight'] = self.lin_layer_torch.weight.detach().numpy()
     self.lin_layer.params['bias'] = self.lin_layer_torch.bias.detach().numpy().reshape(-1,1)
 
-    self.x_torch = torch.randn(1,2, requires_grad=True)
+    self.x_torch = torch.randn(5,2, requires_grad=True)
     self.x = self.x_torch.detach().numpy().T
 
 
@@ -33,9 +34,9 @@ class TestLinear(unittest.TestCase):
   def test_linear_backward(self):
     y_torch = self.lin_layer_torch(self.x_torch)
 
-    dout = np.array([1.,2.,3.]).reshape(-1,1)
-    dout_torch = torch.from_numpy(dout).squeeze().to(dtype = torch.float32)
-    z = sum(y_torch.squeeze()*dout_torch)
+    dout = np.random.rand(3,5)
+    dout_torch = torch.from_numpy(dout.T).to(dtype = torch.float32)
+    z = (y_torch*dout_torch).sum()
     z.backward()
 
     wx_torch = self.lin_layer_torch.weight.grad
@@ -48,10 +49,22 @@ class TestLinear(unittest.TestCase):
     self.assertTrue(np.allclose(dx_torch, dx))
     self.assertTrue(np.allclose(wx_torch, self.lin_layer.grads['weight']))
     self.assertTrue(np.allclose(bx_torch, self.lin_layer.grads['bias']))
-    self.assertEqual(self.lin_layer.grads['weight'].shape, self.lin_layer.params['weight'].shape)
-    self.assertEqual(self.lin_layer.grads['bias'].shape, self.lin_layer.params['bias'].shape)
-    
+    self.assertEqual(
+      self.lin_layer.grads['weight'].shape, 
+      self.lin_layer.params['weight'].shape)
+    self.assertEqual(
+      self.lin_layer.grads['bias'].shape, 
+      self.lin_layer.params['bias'].shape)    
 
+class TestRelu(unittest.TestCase):
+
+  def setUp(self):
+    self.relu_torch = nn.Relu()
+
+    self.relu = ReLUModule()
+
+    self.x_torch = torch.randn(1,2, requires_grad=True)
+    self.x = self.x_torch.detach().numpy().T
 
 
 

@@ -82,8 +82,11 @@ class LinearModule(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    self.grads['weight'] = self.x.T * np.array(dout) 
-    self.grads['bias'] = dout
+    x_3d = np.expand_dims(self.x, axis=2)
+    dout_3d = np.expand_dims(dout.T, axis=0)
+    dw = (x_3d * dout_3d).sum(axis = 1)
+    self.grads['weight'] = dw.T 
+    self.grads['bias'] = dout.sum(axis=1).reshape(-1,1)
     dx = np.matmul(self.params['weight'].T, dout)
     ########################
     # END OF YOUR CODE    #
