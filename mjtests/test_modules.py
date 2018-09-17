@@ -93,7 +93,7 @@ class TestRelu(unittest.TestCase):
 class TestSoftMax(unittest.TestCase):
 
   def setUp(self):
-    self.batch_size = 1 #5
+    self.batch_size = 5
     self.dim = 3
     self.softmax_torch = nn.Softmax(dim=1)
 
@@ -119,11 +119,7 @@ class TestSoftMax(unittest.TestCase):
 
     dx_torch = self.x_torch.grad.numpy().T
 
-    print('dx_torch', dx_torch)
-
     self.softmax.forward(self.x)
     dx = self.softmax.backward(dout)
-
-    print('dx', dx)
 
     self.assertTrue(np.allclose(dx_torch, dx))

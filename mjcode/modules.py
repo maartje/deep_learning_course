@@ -197,10 +197,16 @@ class SoftMaxModule(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    dx = - np.matmul(self.y, self.y.T) 
-    dx[np.diag_indices_from(dx)] = (self.y*(1-self.y)).reshape(-1)
-    dx = dx * dout
-    dx = np.sum(dx, axis=0).reshape(-1,1)
+    dx_list = []
+    for b_index in range(self.y.shape[1]):
+      y_i = self.y[:, b_index].reshape(-1,1)
+      #print(self.y, y_i)
+      dx = - np.matmul(y_i, y_i.T) 
+      dx[np.diag_indices_from(dx)] = (y_i*(1-y_i)).reshape(-1)
+      dx = dx * (dout[:, b_index].reshape(-1,1))
+      dx = np.sum(dx, axis=0).reshape(-1,1)
+      dx_list.append(dx)
+    dx = np.hstack(dx_list)
     ########################
     # END OF YOUR CODE    #
     #######################
