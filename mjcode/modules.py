@@ -172,7 +172,9 @@ class SoftMaxModule(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    x_exp = np.exp(x)
+    out = x_exp / x_exp.sum(axis=0)
+    self.y = out
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -195,7 +197,10 @@ class SoftMaxModule(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    dx = - np.matmul(self.y, self.y.T) 
+    dx[np.diag_indices_from(dx)] = (self.y*(1-self.y)).reshape(-1)
+    dx = dx * dout
+    dx = np.sum(dx, axis=0).reshape(-1,1)
     ########################
     # END OF YOUR CODE    #
     #######################

@@ -1,5 +1,5 @@
 import unittest
-from mjcode.modules import LinearModule, ReLUModule
+from mjcode.modules import LinearModule, ReLUModule, SoftMaxModule
 import numpy as np
 import torch
 import torch.nn as nn
@@ -90,4 +90,40 @@ class TestRelu(unittest.TestCase):
 
     self.assertTrue(np.allclose(dx_torch, dx))
 
+class TestSoftMax(unittest.TestCase):
 
+  def setUp(self):
+    self.batch_size = 1 #5
+    self.dim = 3
+    self.softmax_torch = nn.Softmax(dim=1)
+
+    self.softmax = SoftMaxModule()
+
+    self.x_torch = torch.randn(self.batch_size, self.dim, requires_grad=True)
+    self.x = self.x_torch.detach().numpy().T
+
+  def test_softmax_forward(self):
+    y_torch = self.softmax_torch(self.x_torch).detach().numpy().T
+    y = self.softmax.forward(self.x)
+
+    self.assertTrue(np.allclose(y_torch, y))
+
+  def test_softmax_backward(self):
+    y_torch = self.softmax_torch(self.x_torch)
+
+    dout = np.random.rand(self.dim, self.batch_size)
+    dout_torch = torch.from_numpy(dout.T).to(dtype = torch.float32)
+
+    z = (y_torch*dout_torch).sum()
+    z.backward()
+
+    dx_torch = self.x_torch.grad.numpy().T
+
+    print('dx_torch', dx_torch)
+
+    self.softmax.forward(self.x)
+    dx = self.softmax.backward(dout)
+
+    print('dx', dx)
+
+    self.assertTrue(np.allclose(dx_torch, dx))
