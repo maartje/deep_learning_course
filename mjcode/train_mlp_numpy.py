@@ -9,9 +9,9 @@ from __future__ import print_function
 import argparse
 import numpy as np
 import os
-from mlp_numpy import MLP
-from modules import CrossEntropyModule
-import cifar10_utils
+from mjcode.mlp_numpy import MLP
+from mjcode.modules import CrossEntropyModule
+import mjcode.cifar10_utils
 
 # Default constants
 DNN_HIDDEN_UNITS_DEFAULT = '100'
@@ -46,7 +46,10 @@ def accuracy(predictions, targets):
   ########################
   # PUT YOUR CODE HERE  #
   #######################
-  raise NotImplementedError
+  predicted_values = predictions[targets == 1]
+  max_values = predictions.max(axis=1)
+  prediction_results = (predicted_values == max_values)
+  accuracy = np.sum(prediction_results)/len(prediction_results)
   ########################
   # END OF YOUR CODE    #
   #######################
