@@ -234,7 +234,8 @@ class CrossEntropyModule(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    out = - np.log(np.sum(x * y, axis=0))
+    out = out.mean()
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -258,9 +259,11 @@ class CrossEntropyModule(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    r = y * x
+    dx = - np.divide(1, r, out=np.zeros_like(r), where=r!=0) 
+    dx = dx/y.shape[1]
     ########################
     # END OF YOUR CODE    #
     #######################
-
+    
     return dx

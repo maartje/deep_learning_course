@@ -1,5 +1,5 @@
 import unittest
-from mjcode.modules import LinearModule, ReLUModule, SoftMaxModule
+from mjcode.modules import LinearModule, ReLUModule, SoftMaxModule, CrossEntropyModule
 import numpy as np
 import torch
 import torch.nn as nn
@@ -121,5 +121,38 @@ class TestSoftMax(unittest.TestCase):
 
     self.softmax.forward(self.x)
     dx = self.softmax.backward(dout)
+
+    self.assertTrue(np.allclose(dx_torch, dx))
+
+class TestCrossEntropy(unittest.TestCase):
+
+  def setUp(self):
+    self.loss_torch = nn.CrossEntropyLoss()
+
+    self.loss = CrossEntropyModule()
+
+    self.x_torch = torch.tensor([[1.,2.,3.],[3.,4.,5.]], requires_grad=True)
+    self.y_torch = torch.tensor([1,2])
+    self.x = self.x_torch.detach().numpy().T
+    self.y = np.array([[0.,1.,0.],[0.,0.,1.]]).T
+
+  def test_cross_entropy_forward(self):
+    out_torch = self.loss_torch(self.x_torch, self.y_torch).item()
+    sm = SoftMaxModule()
+    x_sm = sm.forward(self.x)
+    out = self.loss.forward(x_sm, self.y)
+
+    self.assertTrue(np.allclose(np.array(out_torch), np.array(out)))
+
+  def test_cross_entropy_backward(self):
+    out_torch = self.loss_torch(self.x_torch, self.y_torch)
+    out_torch.backward()
+    dx_torch = self.x_torch.grad.numpy().T
+
+    sm = SoftMaxModule()
+    x_sm = sm.forward(self.x)
+    out = self.loss.forward(x_sm, self.y)
+    dx_loss = self.loss.backward(x_sm, self.y)
+    dx = sm.backward(dx_loss)
 
     self.assertTrue(np.allclose(dx_torch, dx))
