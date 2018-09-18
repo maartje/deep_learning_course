@@ -6,7 +6,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from modules import * 
+from mjcode.modules import * 
 
 class MLP(object):
   """
@@ -36,7 +36,14 @@ class MLP(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    self.modules = []
+    for h in n_hidden:
+      self.modules.append(LinearModule(n_inputs, h))
+      self.modules.append(ReLUModule())
+      n_inputs = h
+    self.modules.append(LinearModule(n_inputs, n_classes))
+    self.modules.append(SoftMaxModule())
+
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -58,7 +65,9 @@ class MLP(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    out = x
+    for m in self.modules:
+      out = m.forward(out)
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -79,7 +88,9 @@ class MLP(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    dx = dout
+    for m in reversed(self.modules):
+      dx = m.backward(dx)
     ########################
     # END OF YOUR CODE    #
     #######################
