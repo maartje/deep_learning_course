@@ -9,9 +9,9 @@ from __future__ import print_function
 import argparse
 import numpy as np
 import os
-from mjcode.mlp_numpy import MLP
-from mjcode.modules import CrossEntropyModule
-import mjcode.cifar10_utils
+from mlp_numpy import MLP
+from modules import CrossEntropyModule
+import cifar10_utils
 
 # Default constants
 DNN_HIDDEN_UNITS_DEFAULT = '100'
@@ -76,10 +76,58 @@ def train():
   else:
     dnn_hidden_units = []
 
+  #dnn_hidden_units # [100]
+  #FLAGS.learning_rate #0.002
+  #FLAGS.max_steps #1500
+  #FLAGS.batch_size
+  #FLAGS.eval_freq #100
+  #FLAGS.data_dir  # ./cifar10/cifar-10-batches-py
+
   ########################
   # PUT YOUR CODE HERE  #
   #######################
-  raise NotImplementedError
+  ce_loss = CrossEntropyModule()
+  n_inputs = 3 * 32 * 32
+  n_classes = 10
+  mlp = MLP(n_inputs, dnn_hidden_units, n_classes)
+
+  c10 = cifar10_utils.get_cifar10(FLAGS.data_dir)
+  test_data = c10['test'].images
+  test_data = test_data.reshape(test_data.shape[0], -1)
+
+  acc_values = []
+  loss_values = []
+
+  for i in range(FLAGS.max_steps): 
+    x, y = c10['train'].next_batch(FLAGS.batch_size)
+    x = x.reshape(FLAGS.batch_size, -1)
+
+    # forward and backward pass
+    out = mlp.forward(x.T)
+    loss = ce_loss.forward(out, y.T)
+    dloss = ce_loss.backward(out, y.T)
+    mlp.backward(dloss)
+    loss_values.append(loss)
+
+    # update
+    for m in mlp.modules:
+      if type(m).__name__ == 'LinearModule':
+        m.params['weight'] = m.params['weight'] - FLAGS.learning_rate * m.grads['weight']
+        m.params['bias'] = m.params['bias'] - FLAGS.learning_rate * m.grads['bias']
+
+    # evaluate
+    if i % FLAGS.eval_freq == 0: 
+      predictions = mlp.forward(test_data.T).T
+      targets = c10['test'].labels
+      acc = accuracy(predictions, targets)
+      print('acc', acc, 'loss', loss)
+      acc_values.append(acc)
+    
+  # save loss and accuracy to file
+  with open('accuracy.txt', 'a') as f_acc:
+    print (acc_values, file=f_acc)
+  with open('loss.txt', 'a') as f_loss:
+    print (loss_values, file=f_loss)
   ########################
   # END OF YOUR CODE    #
   #######################
