@@ -121,7 +121,6 @@ def train():
       acc_values.append(acc)
 
   # save loss and accuracy to file
-  print('mj')
   with open('accuracy_torch.txt', 'a') as f_acc:
     print (acc_values, file=f_acc)
   with open('loss_torch.txt', 'a') as f_loss:

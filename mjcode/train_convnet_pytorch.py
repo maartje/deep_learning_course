@@ -12,6 +12,11 @@ import os
 from convnet_pytorch import ConvNet
 import cifar10_utils
 
+from torch import optim
+import torch
+import torch.nn as nn
+
+
 # Default constants
 LEARNING_RATE_DEFAULT = 1e-4
 BATCH_SIZE_DEFAULT = 32
@@ -45,7 +50,10 @@ def accuracy(predictions, targets):
   ########################
   # PUT YOUR CODE HERE  #
   #######################
-  raise NotImplementedError
+  predicted_values = predictions[targets == 1]
+  max_values = predictions.max(axis=1)
+  prediction_results = (predicted_values == max_values)
+  accuracy = np.sum(prediction_results)/len(prediction_results)
   ########################
   # END OF YOUR CODE    #
   #######################
@@ -67,7 +75,46 @@ def train():
   ########################
   # PUT YOUR CODE HERE  #
   #######################
-  raise NotImplementedError
+  ce_loss = nn.CrossEntropyLoss()
+  convnet = ConvNet(3,10)
+  optimizer = optim.Adam(convnet.parameters(), lr = FLAGS.learning_rate)
+
+  c10 = cifar10_utils.get_cifar10(FLAGS.data_dir)
+  test_data = c10['test'].images
+  test_data = torch.tensor(test_data)
+
+  acc_values = []
+  loss_values = []
+
+
+  for i in range(FLAGS.max_steps): #range(FLAGS.max_steps) 
+    x, y = c10['train'].next_batch(FLAGS.batch_size)
+    y = y.argmax(axis=1)
+    x = torch.tensor(x)
+    y = torch.tensor(y)
+
+    optimizer.zero_grad()
+    out = convnet(x)
+    loss = ce_loss(out, y)
+    loss.backward()
+    optimizer.step()  
+    loss_values.append(loss.item())
+
+    # evaluate
+    if i % FLAGS.eval_freq == 0: 
+      with torch.no_grad():
+        predictions = convnet(test_data).detach().numpy()
+        targets = c10['test'].labels
+        acc = accuracy(predictions, targets)
+        print('acc', acc, 'loss', loss.item())
+        acc_values.append(acc)
+
+  # save loss and accuracy to file
+  with open('accuracy_cnn.txt', 'a') as f_acc:
+    print (acc_values, file=f_acc)
+  with open('loss_cnn.txt', 'a') as f_loss:
+    print (loss_values, file=f_loss)
+
   ########################
   # END OF YOUR CODE    #
   #######################

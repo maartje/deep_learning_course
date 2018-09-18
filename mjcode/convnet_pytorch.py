@@ -5,6 +5,7 @@ You should fill in code into indicated sections.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+import torch.nn as nn
 
 class ConvNet(nn.Module):
   """
@@ -29,7 +30,25 @@ class ConvNet(nn.Module):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    super(ConvNet, self).__init__()
+    self.convnet_seq = nn.Sequential(
+      nn.Conv2d(n_channels, 64, kernel_size = 3, padding=1, stride=1),
+      nn.MaxPool2d(3, stride=2, padding=1),
+      nn.Conv2d(64, 128, kernel_size=3, padding=1, stride=1),
+      nn.MaxPool2d(3, stride=2, padding=1),
+      nn.Conv2d(128, 256, kernel_size=3, padding=1, stride=1),
+      nn.Conv2d(256, 256, kernel_size=3, padding=1, stride=1),
+      nn.MaxPool2d(3, stride=2, padding=1),
+      nn.Conv2d(256, 512, kernel_size=3, padding=1, stride=1),
+      nn.Conv2d(512, 512, kernel_size=3, padding=1, stride=1),
+      nn.MaxPool2d(3, stride=2, padding=1),
+      nn.Conv2d(512, 512, kernel_size=3, padding=1, stride=1),
+      nn.Conv2d(512, 512, kernel_size=3, padding=1, stride=1),
+      nn.MaxPool2d(3, stride=2, padding=1),
+      nn.AvgPool2d(1, stride=1, padding=0)
+    )
+    self.ll = nn.Linear(512, n_classes)
+
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -51,7 +70,8 @@ class ConvNet(nn.Module):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    out = self.convnet_seq(x)
+    out = self.ll(out.squeeze())
     ########################
     # END OF YOUR CODE    #
     #######################
