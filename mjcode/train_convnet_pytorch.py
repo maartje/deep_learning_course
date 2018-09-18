@@ -80,8 +80,9 @@ def train():
   optimizer = optim.Adam(convnet.parameters(), lr = FLAGS.learning_rate)
 
   c10 = cifar10_utils.get_cifar10(FLAGS.data_dir)
-  test_data = c10['test'].images
+  test_data = c10['test'].images[:32]
   test_data = torch.tensor(test_data)
+  targets = c10['test'].labels[:32]
 
   acc_values = []
   loss_values = []
@@ -104,7 +105,6 @@ def train():
     if i % FLAGS.eval_freq == 0: 
       with torch.no_grad():
         predictions = convnet(test_data).detach().numpy()
-        targets = c10['test'].labels
         acc = accuracy(predictions, targets)
         print('acc', acc, 'loss', loss.item())
         acc_values.append(acc)
