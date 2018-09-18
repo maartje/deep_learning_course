@@ -86,7 +86,8 @@ def train():
   n_inputs = 3 * 32 * 32
   n_classes = 10
   mlp = MLP(n_inputs, dnn_hidden_units, n_classes)
-  optimizer = optim.SGD(mlp.parameters(), lr = FLAGS.learning_rate)
+  optimizer = optim.SGD(
+    mlp.parameters(), lr = FLAGS.learning_rate, weight_decay=0.001)
 
   c10 = cifar10_utils.get_cifar10(FLAGS.data_dir)
   test_data = c10['test'].images
@@ -119,13 +120,16 @@ def train():
       print('acc', acc, 'loss', loss.item())
       acc_values.append(acc)
 
-  # # save loss and accuracy to file
-  # with open('accuracy_torch.txt', 'a') as f_acc:
-  #   print (acc_values, file=f_acc)
-  # with open('loss_torch.txt', 'a') as f_loss:
-  #   print (loss_values, file=f_loss)
+  # save loss and accuracy to file
+  print('mj')
+  with open('accuracy_torch.txt', 'a') as f_acc:
+    print (acc_values, file=f_acc)
+  with open('loss_torch.txt', 'a') as f_loss:
+    print (loss_values, file=f_loss)
 
-
+  # baseline: acc 0.4522
+  # python train_mlp_pytorch.py --dnn_hidden_units 200,200 --max_steps 3500
+  # also initialize weights as in numpy module
 
   ########################
   # END OF YOUR CODE    #
